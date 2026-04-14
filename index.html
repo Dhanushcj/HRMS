@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Antigraviity</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="login-body">
+    <div class="login-card">
+        <!-- Company Selector -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 2rem; background: #f1f5f9; padding: 0.5rem; border-radius: 16px;">
+            <button type="button" id="btn-antigravity" class="btn" style="flex: 1; font-size: 0.75rem; font-weight: 700; border-radius: 12px; padding: 0.6rem; background: white; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); cursor: pointer;" onclick="setCompany('Antigraviity')">Antigraviity</button>
+            <button type="button" id="btn-forge" class="btn" style="flex: 1; font-size: 0.75rem; font-weight: 700; border-radius: 12px; padding: 0.6rem; background: transparent; border: none; color: #64748b; cursor: pointer;" onclick="setCompany('Forge India')">Forge India</button>
+        </div>
+
+        <div class="login-logo" id="brand-logo">
+            <i data-lucide="shield-check"></i>
+        </div>
+        <h1 class="login-title" id="brand-name">Antigraviity</h1>
+        <p class="login-subtitle">Sign in to your account</p>
+
+        <div id="error-msg" class="login-error" style="display: none;">Invalid id or password</div>
+
+        <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+            <div class="login-input-group">
+                <label class="login-label">Email or Username</label>
+                <input type="text" id="username" class="login-field" placeholder="Enter your email" required>
+            </div>
+
+            <div class="login-input-group">
+                <label class="login-label">Password</label>
+                <div class="login-pass-container">
+                    <input type="password" id="password" class="login-field" placeholder="••••••••" required>
+                    <i data-lucide="eye" class="login-eye" id="toggle-pass"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Sign In <i data-lucide="arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        lucide.createIcons();
+        let selectedCompany = 'Antigraviity';
+
+        function setCompany(company) {
+            selectedCompany = company;
+            const btnAnti = document.getElementById('btn-antigravity');
+            const btnForge = document.getElementById('btn-forge');
+            const brandLogo = document.getElementById('brand-logo');
+            const brandName = document.getElementById('brand-name');
+            const loginBtn = document.querySelector('.login-btn');
+
+            if (company === 'Antigraviity') {
+                btnAnti.style.background = 'white';
+                btnAnti.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+                btnAnti.style.color = '#1e293b';
+                btnForge.style.background = 'transparent';
+                btnForge.style.boxShadow = 'none';
+                btnForge.style.color = '#64748b';
+                
+                brandLogo.innerHTML = '<i data-lucide="shield-check"></i>';
+                brandLogo.style.background = 'black';
+                brandName.textContent = 'Antigraviity';
+                brandName.style.color = '#6366f1';
+                loginBtn.style.background = 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)';
+            } else {
+                btnForge.style.background = 'white';
+                btnForge.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+                btnForge.style.color = '#0055b8';
+                btnAnti.style.background = 'transparent';
+                btnAnti.style.boxShadow = 'none';
+                btnAnti.style.color = '#64748b';
+
+                brandLogo.innerHTML = `
+                    <div style="width: 32px; height: 32px; background: #0055b8; position: relative;">
+                        <div style="position: absolute; bottom: 0; right: 0; width: 0; height: 0; border-left: 14px solid transparent; border-bottom: 14px solid #facc15;"></div>
+                    </div>
+                `;
+                brandLogo.style.background = 'transparent';
+                
+                brandName.innerHTML = `FORGE <span style="color: #facc15; margin-left: 4px;">INDIA</span><br><span style="font-size: 0.7rem; color: #0055b8; font-weight: 700; letter-spacing: 4px; display: block; margin-top: 4px;">CONNECT</span>`;
+                brandName.style.color = '#0055b8';
+                brandName.style.lineHeight = '1.1';
+                loginBtn.style.background = '#0055b8';
+            }
+            lucide.createIcons();
+        }
+
+        // Password visibility toggle
+        const togglePass = document.getElementById('toggle-pass');
+        const passField = document.getElementById('password');
+        
+        togglePass.addEventListener('click', () => {
+            const type = passField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passField.setAttribute('type', type);
+            togglePass.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        });
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error-msg');
+            const loginBtn = e.target.querySelector('button');
+
+            errorDiv.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Verifying...';
+
+            try {
+                const user = await api.login(email, pass);
+                
+                // --- PORTAL ACCESS CONTROL ---
+                const allowed = user.allowedPortals || [];
+                if (!allowed.includes(selectedCompany)) {
+                    errorDiv.textContent = `Access Denied: Your account is not authorized to access the ${selectedCompany} portal.`;
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                // Set Session
+                localStorage.setItem('activeCompany', selectedCompany);
+                localStorage.setItem('MY_ID', user.id);
+                localStorage.setItem('MY_NAME', user.name);
+                localStorage.setItem('MY_ROLE', user.role);
+                
+                // Redirect based on role in user object
+                const role = user.role.toLowerCase();
+                if (role.includes('hr')) {
+                    window.location.href = 'hr_portal.html';
+                } else if (role.includes('manager') || role.includes('lead')) {
+                    window.location.href = 'manager_portal.html';
+                } else {
+                    window.location.href = 'employee_portal.html';
+                }
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = `Sign In <i data-lucide="arrow-right"></i>`;
+                lucide.createIcons();
+            }
+        }
+    </script>
+</body>
+</html>

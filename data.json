@@ -1,0 +1,138 @@
+{
+  "employees": [
+    {
+      "id": "EMP010",
+      "name": "Dhanush C.",
+      "email": "emp@ag",
+      "loginId": "emp@ag",
+      "password": "test",
+      "department": "Engineering",
+      "role": "Full Stack Developer",
+      "managerId": "MGR001",
+      "company": "Antigraviity",
+      "allowedPortals": [
+        "Antigraviity"
+      ]
+    },
+    {
+      "id": "MGR001",
+      "name": "Suresh Kumar",
+      "email": "Manager@ag",
+      "loginId": "Manager@ag",
+      "password": "test",
+      "department": "Engineering",
+      "role": "Tech Lead",
+      "managerId": "HR001",
+      "company": "Antigraviity",
+      "allowedPortals": [
+        "Antigraviity"
+      ]
+    },
+    {
+      "id": "HR001",
+      "name": "Meera Menon",
+      "email": "HR@ag",
+      "loginId": "HR@ag",
+      "password": "test",
+      "department": "Human Resources",
+      "role": "HR Director",
+      "managerId": "MGR001",
+      "company": "Antigraviity",
+      "allowedPortals": [
+        "Forge India",
+        "Antigraviity"
+      ]
+    },
+    {
+      "id": "MGR_FIC",
+      "name": "Karan Singh",
+      "email": "Manager@fic",
+      "loginId": "Manager@fic",
+      "password": "test",
+      "department": "Production",
+      "role": "Ops Manager",
+      "managerId": "HR_FIC",
+      "company": "Forge India",
+      "allowedPortals": [
+        "Forge India"
+      ]
+    },
+    {
+      "id": "HR_FIC",
+      "name": "Agila",
+      "email": "agila@fic",
+      "loginId": "HR@fic",
+      "password": "test",
+      "department": "Human Resources",
+      "role": "HR Director",
+      "managerId": "MGR_FIC",
+      "company": "Forge India",
+      "allowedPortals": [
+        "Forge India",
+        "Antigraviity"
+      ]
+    },
+    {
+      "id": "EMP011",
+      "name": "Priya Sharma",
+      "email": "priya@fic",
+      "loginId": "priya@fic",
+      "password": "test",
+      "department": "Quality",
+      "role": "QA Engineer",
+      "managerId": "MGR_FIC",
+      "company": "Forge India",
+      "allowedPortals": [
+        "Forge India"
+      ]
+    },
+    {
+      "id": "EMP015",
+      "name": "Sushmitha",
+      "email": "Sushmitha@ag",
+      "loginId": "sus@ag",
+      "password": "test",
+      "department": "IT",
+      "role": "Developer",
+      "managerId": "MGR001",
+      "company": "Antigraviity",
+      "allowedPortals": [
+        "Antigraviity"
+      ]
+    }
+  ],
+  "resignations": [],
+  "transfers": [],
+  "attendance": [
+    { "id": "ATT001", "employeeId": "EMP010", "date": "2026-04-01", "clockIn": "2026-04-01T09:00:00.000Z", "clockOut": "2026-04-01T18:00:00.000Z", "status": "Present" },
+    { "id": "ATT002", "employeeId": "EMP010", "date": "2026-04-02", "clockIn": "2026-04-02T09:15:00.000Z", "clockOut": "2026-04-02T18:30:00.000Z", "status": "Present" },
+    { "id": "ATT003", "employeeId": "EMP010", "date": "2026-04-03", "clockIn": "2026-04-03T10:15:00.000Z", "clockOut": "2026-04-03T19:00:00.000Z", "status": "Late Login" },
+    { "id": "ATT004", "employeeId": "EMP010", "date": "2026-04-06", "clockIn": "2026-04-06T08:50:00.000Z", "clockOut": "2026-04-06T17:50:00.000Z", "status": "Present" },
+    { "id": "ATT005", "employeeId": "EMP010", "date": "2026-04-07", "clockIn": "2026-04-07T09:05:00.000Z", "clockOut": "2026-04-07T18:05:00.000Z", "status": "Present" },
+    { "id": "ATT006", "employeeId": "EMP010", "date": "2026-04-14", "clockIn": "2026-04-14T07:00:53.332Z", "clockOut": "2026-04-14T07:01:13.543Z", "status": "Present" }
+  ],
+  "leaves": [
+    {
+      "id": "1776150111920",
+      "employeeId": "EMP010",
+      "employeeName": "Dhanush C.",
+      "type": "Sick Leave",
+      "startDate": "2026-04-15",
+      "endDate": "2026-04-17",
+      "reason": "ok",
+      "status": "Approved",
+      "createdAt": "2026-04-14T07:01:51.920Z"
+    },
+    {
+      "id": "1776150111921",
+      "employeeId": "EMP010",
+      "employeeName": "Dhanush C.",
+      "type": "Casual Leave",
+      "startDate": "2026-04-10",
+      "endDate": "2026-04-10",
+      "reason": "Family function",
+      "status": "Approved",
+      "createdAt": "2026-04-09T10:00:00.000Z"
+    }
+  ]
+}

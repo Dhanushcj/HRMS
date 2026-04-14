@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Portal | Antigraviity</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div id="brand-logo-container" class="brand-icon"></div>
+                <span id="brand-name">Portal</span>
+            </div>
+            
+            <p class="sidebar-title">HR Administration</p>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link ${currentView === 'approval' ? 'active' : ''}" onclick="switchView('approval')"><i data-lucide="layout"></i> Resignation Hub</a>
+                <a href="#" class="nav-link ${currentView === 'attendance' ? 'active' : ''}" onclick="switchView('attendance')"><i data-lucide="calendar"></i> Org Attendance</a>
+                <a href="#" class="nav-link ${currentView === 'leaves' ? 'active' : ''}" onclick="switchView('leaves')"><i data-lucide="clock"></i> Leave Oversight</a>
+                <a href="#" class="nav-link ${currentView === 'directory' ? 'active' : ''}" onclick="switchView('directory')"><i data-lucide="users"></i> Employee Directory</a>
+                <a href="#" class="nav-link ${currentView === 'request' ? 'active' : ''}" onclick="switchView('request')"><i data-lucide="file-text"></i> My Resignation</a>
+            </nav>
+
+            <div style="margin-top: auto;">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <header class="header">
+                <div>
+                    <h1 id="page-title">HR Clearance Dashboard</h1>
+                    <p id="page-subtitle" style="color: var(--text-muted);">Oversee organization-wide exit compliance.</p>
+                </div>
+                <div class="header-user">
+                    <div id="notification-bell" style="position: relative; cursor: pointer; margin-right: 1.5rem;" onclick="toggleNotifDropdown(event)">
+                        <i data-lucide="bell"></i>
+                        <span id="notif-dot" style="display: none; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: var(--danger); border-radius: 50%; border: 2px solid white;"></span>
+                        
+                        <div id="notif-dropdown" style="display: none; position: absolute; top: 100%; right: 0; width: 300px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--border); z-index: 1000; margin-top: 10px; text-align: left; padding: 1rem;">
+                            <h4 style="font-size: 0.85rem; margin-bottom: 0.75rem;">Notifications</h4>
+                            <div id="notif-list"><p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; padding: 1rem;">No new alerts</p></div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <p id="user-display-name" style="font-weight: 700; font-size: 0.9rem;">--</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">HR Director</p>
+                    </div>
+                    <div id="user-avatar" class="user-avatar" style="background: var(--primary);">?</div>
+                </div>
+            </header>
+
+            <div class="page-container" id="portal-body">
+                <!-- Content injected by JS -->
+            </div>
+
+            <!-- Add Employee Modal -->
+            <div id="add-employee-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 class="card-title" id="modal-title" style="margin: 0;">Add New Employee</h2>
+                        <button onclick="hideAddEmployeeModal()" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i data-lucide="x"></i></button>
+                    </div>
+                    
+                    <form id="add-employee-form" onsubmit="handleAddEmployee(event)">
+                        <div style="max-height: 60vh; overflow-y: auto; padding-right: 0.5rem; margin-bottom: 1.5rem;">
+                            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                                <div class="form-group">
+                                    <label class="label">Full Name</label>
+                                    <input type="text" id="new-emp-name" class="input" placeholder="e.g. John Doe" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Employee ID (Auto-Generated)</label>
+                                    <input type="text" id="new-emp-id" class="input" readonly style="background: #f1f5f9; cursor: not-allowed; color: #64748b;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Corporate Email</label>
+                                    <input type="email" id="new-emp-email" class="input" placeholder="john@company.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Department</label>
+                                    <input type="text" id="new-emp-dept" class="input" placeholder="e.g. Engineering" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Role</label>
+                                    <input type="text" id="new-emp-role" class="input" placeholder="e.g. Developer" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Reporting Manager</label>
+                                    <select id="new-emp-manager" class="input" required>
+                                        <option value="">Select Manager</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Portal Access Authorization</label>
+                                    <div style="display: flex; gap: 1rem; background: #f8fafc; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border);">
+                                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; cursor: pointer;">
+                                            <input type="checkbox" name="portals" value="Antigraviity"> AG
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; cursor: pointer;">
+                                            <input type="checkbox" name="portals" value="Forge India"> FIC
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="label">Login ID</label>
+                                    <input type="text" id="new-emp-loginid" class="input" placeholder="Custom Login ID">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label class="label">Password</label>
+                                    <input type="password" id="new-emp-password" class="input" placeholder="••••••••" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                            <button type="button" class="btn btn-outline" onclick="hideAddEmployeeModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="modal-submit-btn">Create Employee</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Transfer Employee Modal -->
+            <div id="transfer-modal" class="modal-overlay" style="display: none;">
+                <div class="modal-card" style="max-width: 450px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 class="card-title" style="margin: 0;">Initiate Employee Transfer</h2>
+                        <button onclick="hideTransferModal()" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i data-lucide="x"></i></button>
+                    </div>
+                    <form id="transfer-form" onsubmit="handleTransferSubmit(event)">
+                        <input type="hidden" id="trans-emp-id">
+                        <p id="trans-emp-name" style="margin-bottom: 1.5rem; font-weight: 600; color: var(--primary);"></p>
+                        
+                        <div class="form-group" style="margin-bottom: 1.25rem;">
+                            <label class="label">Target Company</label>
+                            <select id="trans-target-company" class="input" required onchange="updateTargetManagers()">
+                                <option value="">Select Company</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label class="label">New Reporting Manager (at target)</label>
+                            <select id="trans-target-manager" class="input" required>
+                                <option value="">Select Target Manager</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button type="button" class="btn btn-outline" onclick="hideTransferModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Send Transfer Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        const HR_ID = localStorage.getItem('MY_ID') || 'HR001';
+        const HR_NAME = localStorage.getItem('MY_NAME') || 'Meera Menon';
+        const ACTIVE_COMPANY = localStorage.getItem('activeCompany') || 'Antigraviity';
+        
+        let currentView = 'approval';
+        let editingEmployeeId = null;
+
+        async function initPortal() {
+            renderBranding();
+            switchView(currentView);
+        }
+
+        function renderBranding() {
+            const isForge = ACTIVE_COMPANY === 'Forge India';
+            document.title = `HR Portal | ${ACTIVE_COMPANY}`;
+            const brandName = document.getElementById('brand-name');
+            const logo = document.getElementById('brand-logo-container');
+            const avatar = document.getElementById('user-avatar');
+            
+            document.getElementById('user-display-name').textContent = HR_NAME;
+            avatar.textContent = HR_NAME.charAt(0);
+
+            if (isForge) {
+                logo.innerHTML = `
+                    <div style="width: 24px; height: 24px; background: #0055b8; position: relative; border-radius: 2px;">
+                        <div style="position: absolute; bottom: 0; right: 0; width: 0; height: 0; border-left: 12px solid transparent; border-bottom: 12px solid #facc15;"></div>
+                    </div>
+                `;
+                logo.style.background = 'transparent';
+                brandName.innerHTML = `FORGE <span style="color: #facc15;">INDIA</span><br><span style="font-size: 0.6rem; color: #0055b8; font-weight: 700; letter-spacing: 3px; display: block; margin-top: 2px;">CONNECT</span>`;
+                brandName.style.lineHeight = '1.1';
+                brandName.style.fontSize = '1.1rem';
+                
+                avatar.style.background = '#0055b8';
+                document.documentElement.style.setProperty('--primary', '#0055b8');
+            } else {
+                logo.innerHTML = '<i data-lucide="shield-check"></i>';
+                logo.style.background = 'black';
+                brandName.textContent = 'Antigraviity';
+                brandName.style.lineHeight = 'normal';
+                brandName.style.fontSize = '1.25rem';
+                
+                avatar.style.background = '#6366f1';
+                document.documentElement.style.setProperty('--primary', '#6366f1');
+            }
+            lucide.createIcons();
+        }
+
+        async function switchView(view) {
+            currentView = view;
+            const container = document.getElementById('portal-body');
+            
+            if (view === 'request') {
+                renderHRSelfResignation(container);
+            } else if (view === 'attendance') {
+                renderOrgAttendance(container);
+            } else if(view === 'leaves') {
+                renderLeaveOversight(container);
+            } else if(view === 'directory') {
+                renderEmployeeDirectory(container);
+            } else {
+                renderOrgApproval(container);
+            }
+            renderSidebar();
+            lucide.createIcons();
+        }
+
+        function renderSidebar() {
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(l => {
+                const text = l.textContent.toLowerCase();
+                l.classList.remove('active');
+                if(text.includes('resignation hub') && currentView === 'approval') l.classList.add('active');
+                if(text.includes('org attendance') && currentView === 'attendance') l.classList.add('active');
+                if(text.includes('leave oversight') && currentView === 'leaves') l.classList.add('active');
+                if(text.includes('employee directory') && currentView === 'directory') l.classList.add('active');
+                if(text.includes('my resignation') && currentView === 'request') l.classList.add('active');
+            });
+        }
+
+        // --- SELF RESIGNATION LOGIC ---
+        async function renderHRSelfResignation(container) {
+            document.getElementById('page-title').textContent = "My Resignation";
+            const all = await api.getResignations();
+            const myHistory = all.filter(r => r.employeeId === HR_ID).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const last = myHistory[0];
+
+            if (!last || last.status === 'Rejected') {
+                container.innerHTML = `
+                    <div class="card" style="max-width: 600px; margin: 0 auto;">
+                        <h3 class="card-title">Apply for Resignation</h3>
+                        <div class="form-group">
+                            <label class="label">Reason</label>
+                            <select class="input" id="reason">
+                                <option>Career Specialization</option>
+                                <option>Health</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                        <label class="label">Personal Email Address (For Relieving Letter)</label>
+                        <input type="email" class="input" id="personalEmail" placeholder="yourname@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Last Working Day (Fixed 90 Days Notice)</label>
+                            <input type="date" class="input" id="lwd" value="${new Date(Date.now() + 90*24*60*60*1000).toISOString().split('T')[0]}" readonly>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;" onclick="submitSelfForm()">Submit Request</button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `<div class="card"><h3 class="card-title">Status: ${last.status}</h3><p>Your exit is being processed.</p></div>`;
+            }
+        }
+
+        async function submitSelfForm() {
+            const personalEmail = document.getElementById('personalEmail').value;
+            if (!personalEmail) { alert('Specify personal email.'); return; }
+
+            const data = {
+                employeeId: HR_ID,
+                employeeName: HR_NAME,
+                personalEmail: personalEmail,
+                reason: document.getElementById('reason').value,
+                lwd: document.getElementById('lwd').value
+            };
+            await api.submitResignation(data);
+            alert('Recorded'); switchView('request');
+        }
+
+        // --- ORG MANAGEMENT LOGIC ---
+        async function renderOrgApproval(container) {
+            document.getElementById('page-title').textContent = "HR Command Center";
+            const list = await api.getResignations({ company: ACTIVE_COMPANY });
+            
+            const active = list.filter(r => r.status !== 'Relieved' && r.status !== 'Rejected');
+            const relieved = list.filter(r => r.status === 'Relieved');
+            const pendingVal = list.filter(r => r.status === 'Manager Approved').length;
+
+            container.innerHTML = `
+                <!-- Stats Grid -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card" style="padding: 1.5rem; border-left: 4px solid var(--primary);">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Active Exits</p>
+                        <h2 style="font-size: 1.75rem; color: var(--primary);">${active.length}</h2>
+                    </div>
+                    <div class="card" style="padding: 1.5rem; border-left: 4px solid #f59e0b;">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Pending HR</p>
+                        <h2 style="font-size: 1.75rem; color: #f59e0b;">${pendingVal}</h2>
+                    </div>
+                    <div class="card" style="padding: 1.5rem; border-left: 4px solid #10b981;">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Relieved</p>
+                        <h2 style="font-size: 1.75rem; color: #10b981;">${relieved.length}</h2>
+                    </div>
+                    <div class="card" style="padding: 1.5rem; border-left: 4px solid #6366f1;">
+                        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Cases</p>
+                        <h2 style="font-size: 1.75rem; color: #6366f1;">${list.length}</h2>
+                    </div>
+                </div>
+
+                <!-- Ongoing Resignations -->
+                <div class="card">
+                    <div class="card-header"><h3 class="card-title">Ongoing Resignations</h3></div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Employee</th><th>Status</th><th>IT</th><th>Admin</th><th>Finance</th><th>Action</th></tr></thead>
+                            <tbody>
+                                ${active.length === 0 ? '<tr><td colspan="6" style="text-align: center; padding: 2rem;">No active resignations.</td></tr>' : 
+                                  active.map(r => `
+                                    <tr>
+                                        <td><b>${r.employeeName}</b><br><small>${r.employeeId}</small></td>
+                                        <td><span class="badge ${getStatusClass(r.status)}">${r.status}</span></td>
+                                        <td><input type="checkbox" ${r.clearance.it ? 'checked' : ''} onclick="toggleClearance('${r.id}', 'it', this.checked)"></td>
+                                        <td><input type="checkbox" ${r.clearance.admin ? 'checked' : ''} onclick="toggleClearance('${r.id}', 'admin', this.checked)"></td>
+                                        <td><input type="checkbox" ${r.clearance.finance ? 'checked' : ''} onclick="toggleClearance('${r.id}', 'finance', this.checked)"></td>
+                                        <td>
+                                            ${r.status === 'Manager Approved' ? `<button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="validateHR('${r.id}')">Validate</button>` : ''}
+                                            ${r.status === 'HR Validated' ? `<button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="markRelieved('${r.id}')">Relieve</button>` : ''}
+                                        </td>
+                                    </tr>
+                                  `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Relieved History -->
+                ${relieved.length > 0 ? `
+                <div class="card" style="margin-top: 2rem; opacity: 0.9;">
+                    <div class="card-header"><h3 class="card-title">Relieved History</h3></div>
+                    <div class="table-container">
+                        <table style="opacity: 0.8;">
+                            <thead><tr><th>Employee</th><th>Relieved Date</th><th>LWD</th><th>Notes</th></tr></thead>
+                            <tbody>
+                                ${relieved.map(r => `
+                                    <tr>
+                                        <td><b>${r.employeeName}</b><br><small>${r.employeeId}</small></td>
+                                        <td>${new Date(r.relievedDate).toLocaleDateString()}</td>
+                                        <td>${r.lwd}</td>
+                                        <td><span class="badge badge-success">Fully Processed</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+        }
+
+        function getStatusClass(s) {
+            if (s.includes('Approved')) return 'badge-success';
+            if (s === 'Submitted') return 'badge-pending';
+            return 'badge-blue';
+        }
+
+        async function toggleClearance(id, dept, val) {
+            const list = await api.getResignations({ company: ACTIVE_COMPANY });
+            const res = list.find(r => r.id === id);
+            res.clearance[dept] = val;
+            await api.updateResignation(id, { clearance: res.clearance });
+            switchView('approval');
+        }
+
+        async function validateHR(id) {
+            await api.updateResignation(id, { status: 'HR Validated', step: 3 });
+            switchView('approval');
+        }
+
+        async function markRelieved(id) {
+            await api.updateResignation(id, { status: 'Relieved', step: 8, relievedDate: new Date().toISOString() });
+            switchView('approval');
+        }
+
+        // --- HRMS: ORG ATTENDANCE ---
+        async function renderOrgAttendance(container) {
+            document.getElementById('page-title').textContent = "Organization Attendance";
+            document.getElementById('page-subtitle').textContent = "Real-time presence tracking across the entire firm.";
+            
+            const logs = await api.getAttendance({ company: localStorage.getItem('activeCompany') });
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3 class="card-title">Live Presence Logs</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Employee</th><th>Date</th><th>Clock In</th><th>Clock Out</th><th>Status</th></tr></thead>
+                            <tbody>
+                                ${logs.length === 0 ? '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No attendance records found.</td></tr>' : 
+                                    logs.reverse().map(log => `
+                                        <tr>
+                                            <td><b>${log.employeeName || 'Unknown'}</b><br><small>${log.employeeId}</small></td>
+                                            <td>${new Date(log.date).toLocaleDateString()}</td>
+                                            <td>${new Date(log.clockIn).toLocaleTimeString()}</td>
+                                            <td>${log.clockOut ? new Date(log.clockOut).toLocaleTimeString() : '<span class="pulse"></span> <b>Active</b>'}</td>
+                                            <td><span class="badge badge-success">${log.status}</span></td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- HRMS: LEAVE OVERSIGHT ---
+        async function renderLeaveOversight(container) {
+            document.getElementById('page-title').textContent = "Leave Oversight";
+            document.getElementById('page-subtitle').textContent = "Monitor and manage organization-wide leave requests.";
+            
+            const allLeaves = await api.getLeaves({ company: localStorage.getItem('activeCompany') });
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3 class="card-title">Organization Leave Ledger</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Employee</th><th>Type</th><th>Duration</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                                ${allLeaves.length === 0 ? '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No leave requests found.</td></tr>' : 
+                                    allLeaves.reverse().map(l => `
+                                        <tr>
+                                            <td><b>${l.employeeName}</b><br><small>${l.employeeId}</small></td>
+                                            <td>${l.type}</td>
+                                            <td>${new Date(l.startDate).toLocaleDateString()} - ${new Date(l.endDate).toLocaleDateString()}</td>
+                                            <td><span class="badge ${l.status === 'Approved' ? 'badge-success' : (l.status === 'Rejected' ? 'badge-danger' : 'badge-blue')}">${l.status}</span></td>
+                                            <td>
+                                                ${l.status === 'Pending' ? `
+                                                    <button class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="finalizeLeave('${l.id}', 'Approved')">Finalize</button>
+                                                ` : '--'}
+                                            </td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function finalizeLeave(id, status) {
+            await api.updateLeave(id, { status });
+            alert(`Leave ${status} by HR!`);
+            switchView('leaves');
+        }
+
+        // --- HRMS: EMPLOYEE DIRECTORY ---
+        async function renderEmployeeDirectory(container) {
+            document.getElementById('page-title').textContent = "Employee Directory";
+            document.getElementById('page-subtitle').textContent = "View and manage the master employee database.";
+            
+            const employees = await api.getEmployees({ company: ACTIVE_COMPANY });
+
+            container.innerHTML = `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 class="card-title" style="margin: 0;">Staff Registry</h3>
+                        <button class="btn btn-primary" onclick="showAddEmployeeModal()"><i data-lucide="plus"></i> Add Employee</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Name & ID</th><th>Department</th><th>Portal Access</th><th>Action</th></tr></thead>
+                            <tbody>
+                                ${employees.map(e => `
+                                    <tr>
+                                        <td><b>${e.name}</b><br><small>${e.id}</small></td>
+                                        <td>${e.department}</td>
+                                        <td>
+                                            <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                                                ${(e.allowedPortals || []).map(p => `<span class="badge" style="background: ${p === 'Forge India' ? '#dbeafe' : '#f3f4f6'}; color: ${p === 'Forge India' ? '#1e40af' : '#374151'}; font-size: 0.65rem;">${p === 'Forge India' ? 'FIC' : 'AG'}</span>`).join('')}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap; min-width: 180px;">
+                                                <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; display: flex; align-items: center; gap: 4px;" onclick="showEditEmployeeModal('${e.id}')">
+                                                    <i data-lucide="edit-3" style="width: 14px;"></i> Edit
+                                                </button>
+                                                <button class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #6366f1; border-color: #6366f1; display: flex; align-items: center; gap: 4px;" onclick="showTransferModal('${e.id}', '${e.name}')">
+                                                    <i data-lucide="arrow-right-left" style="width: 14px;"></i> Transfer
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        async function showAddEmployeeModal() {
+            const modal = document.getElementById('add-employee-modal');
+            const managerSelect = document.getElementById('new-emp-manager');
+            
+            // For managers, we only show those in the ACTIVE_COMPANY
+            const companyEmployees = await api.getEmployees({ company: ACTIVE_COMPANY });
+            const managers = companyEmployees.filter(e => e.role.toLowerCase().includes('manager') || e.role.toLowerCase().includes('lead') || e.id.startsWith('MGR') || e.id.startsWith('HR'));
+
+            managerSelect.innerHTML = '<option value="">Select Manager</option>' + 
+                managers.map(m => `<option value="${m.id}">${m.name} (${m.role})</option>`).join('');
+
+            // For global ID calculation, fetch ALL employees across the org
+            const allEmployees = await api.getEmployees(); 
+            const empIds = allEmployees
+                .map(e => e.id)
+                .filter(id => id && id.startsWith('EMP'))
+                .map(id => parseInt(id.replace('EMP', '')))
+                .filter(num => !isNaN(num));
+            const nextIdNum = Math.max(...empIds, 0) + 1;
+            const nextId = `EMP${nextIdNum.toString().padStart(3, '0')}`;
+            document.getElementById('new-emp-id').value = nextId;
+
+            editingEmployeeId = null;
+            document.getElementById('modal-title').textContent = "Add New Employee";
+            document.getElementById('modal-submit-btn').textContent = "Create Employee";
+            document.getElementById('add-employee-form').reset();
+            document.getElementById('new-emp-id').disabled = false;
+            
+            modal.style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        // --- TRANSFER LOGIC ---
+        function hideTransferModal() { document.getElementById('transfer-modal').style.display = 'none'; }
+
+        async function showTransferModal(empId, empName) {
+            document.getElementById('trans-emp-id').value = empId;
+            document.getElementById('trans-emp-name').textContent = `Transferring: ${empName} (${empId})`;
+            const targetSelect = document.getElementById('trans-target-company');
+            
+            // Show only the "Other" company
+            const otherCompany = ACTIVE_COMPANY === 'Antigraviity' ? 'Forge India' : 'Antigraviity';
+            const otherDisplayName = ACTIVE_COMPANY === 'Antigraviity' ? 'Forge India Connect' : 'Antigraviity';
+            
+            targetSelect.innerHTML = `
+                <option value="">Select Target Company</option>
+                <option value="${otherCompany}">${otherDisplayName}</option>
+            `;
+            
+            document.getElementById('trans-target-manager').innerHTML = '<option value="">Select Target Manager</option>';
+            
+            document.getElementById('transfer-modal').style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        async function updateTargetManagers() {
+            const company = document.getElementById('trans-target-company').value;
+            const managerSelect = document.getElementById('trans-target-manager');
+            if (!company) {
+                managerSelect.innerHTML = '<option value="">Select Target Manager</option>';
+                return;
+            }
+            
+            const all = await api.getEmployees({ company: company });
+            const managers = all.filter(e => e.role.toLowerCase().includes('manager') || e.role.toLowerCase().includes('lead') || e.id.startsWith('MGR') || e.id.startsWith('HR'));
+            
+            managerSelect.innerHTML = '<option value="">Select Manager in ' + company + '</option>' +
+                managers.map(m => `<option value="${m.id}">${m.name} (${m.role})</option>`).join('');
+        }
+
+        async function handleTransferSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = "Processing...";
+
+            const empId = document.getElementById('trans-emp-id').value;
+            const toCompany = document.getElementById('trans-target-company').value;
+            const newManagerId = document.getElementById('trans-target-manager').value;
+
+            try {
+                await api.createTransfer({
+                    employeeId: empId,
+                    fromCompany: ACTIVE_COMPANY,
+                    toCompany: toCompany,
+                    newManagerId: newManagerId
+                });
+                alert('Transfer order sent to employee for approval!');
+                hideTransferModal();
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Send Transfer Order";
+            }
+        }
+
+        async function showEditEmployeeModal(empId) {
+            // Find employee by ID
+            const res = await api.getEmployees({ company: ACTIVE_COMPANY });
+            const emp = res.find(e => e.id === empId);
+            if (!emp) return alert("Employee not found");
+
+            editingEmployeeId = emp.id;
+            document.getElementById('modal-title').textContent = "Edit Employee Details";
+            document.getElementById('modal-submit-btn').textContent = "Save Changes";
+            
+            // Fill basics
+            document.getElementById('new-emp-name').value = emp.name;
+            document.getElementById('new-emp-id').value = emp.id;
+            document.getElementById('new-emp-id').disabled = true; // Read-only during edit
+            document.getElementById('new-emp-email').value = emp.email;
+            document.getElementById('new-emp-dept').value = emp.department;
+            document.getElementById('new-emp-role').value = emp.role;
+            document.getElementById('new-emp-loginid').value = emp.loginId || emp.id;
+            document.getElementById('new-emp-password').value = emp.password || 'test';
+
+            // Portals
+            const checkboxes = document.querySelectorAll('input[name="portals"]');
+            checkboxes.forEach(cb => {
+                cb.checked = (emp.allowedPortals || []).includes(cb.value);
+            });
+
+            const modal = document.getElementById('add-employee-modal');
+            const managerSelect = document.getElementById('new-emp-manager');
+            
+            // Fetch managers
+            const allEmployees = await api.getEmployees({ company: ACTIVE_COMPANY });
+            const managers = allEmployees.filter(e => e.role.toLowerCase().includes('manager') || e.role.toLowerCase().includes('lead') || e.id.startsWith('MGR') || e.id.startsWith('HR'));
+
+            managerSelect.innerHTML = '<option value="">Select Manager</option>' + 
+                managers.map(m => `<option value="${m.id}">${m.name} (${m.role})</option>`).join('');
+            
+            managerSelect.value = emp.managerId || "";
+
+            modal.style.display = 'flex';
+            lucide.createIcons();
+        }
+
+        function hideAddEmployeeModal() {
+            document.getElementById('add-employee-modal').style.display = 'none';
+        }
+
+        async function handleAddEmployee(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = editingEmployeeId ? 'Saving...' : 'Creating...';
+
+            const checkboxes = document.querySelectorAll('input[name="portals"]:checked');
+            const allowedPortals = Array.from(checkboxes).map(cb => cb.value);
+
+            if (allowedPortals.length === 0) {
+                alert('Please select at least one portal access.');
+                btn.disabled = false;
+                btn.textContent = 'Create Employee';
+                return;
+            }
+
+            const empData = {
+                name: document.getElementById('new-emp-name').value,
+                email: document.getElementById('new-emp-email').value,
+                loginId: document.getElementById('new-emp-loginid').value || document.getElementById('new-emp-email').value,
+                password: document.getElementById('new-emp-password').value,
+                department: document.getElementById('new-emp-dept').value,
+                role: document.getElementById('new-emp-role').value,
+                managerId: document.getElementById('new-emp-manager').value,
+                company: ACTIVE_COMPANY,
+                allowedPortals: allowedPortals
+            };
+
+            try {
+                if (editingEmployeeId) {
+                    empData.id = editingEmployeeId;
+                    await api.updateEmployee(editingEmployeeId, empData);
+                    alert('Employee updated successfully!');
+                } else {
+                    await api.addEmployee(empData);
+                    alert('Employee added successfully!');
+                }
+                hideAddEmployeeModal();
+                switchView('directory');
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = editingEmployeeId ? 'Save Changes' : 'Create Employee';
+            }
+        }
+
+        function toggleNotifDropdown(e) {
+            e.stopPropagation();
+            const dd = document.getElementById('notif-dropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+        document.addEventListener('click', () => { document.getElementById('notif-dropdown').style.display = 'none'; });
+
+        initPortal();
+    </script>
+</body>
+</html>

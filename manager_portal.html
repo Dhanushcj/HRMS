@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Portal | Antigraviity</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="portal-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div id="brand-logo-container" class="brand-icon"></div>
+                <span id="brand-name">Portal</span>
+            </div>
+            
+            <p class="sidebar-title">Manager Tools</p>
+            <nav class="nav-menu">
+                <a href="#" class="nav-link ${currentView === 'approval' ? 'active' : ''}" onclick="switchView('approval')"><i data-lucide="check-square"></i> Resignation Approval</a>
+                <a href="#" class="nav-link ${currentView === 'attendance' ? 'active' : ''}" onclick="switchView('attendance')"><i data-lucide="calendar"></i> Team Attendance</a>
+                <a href="#" class="nav-link ${currentView === 'leaves' ? 'active' : ''}" onclick="switchView('leaves')"><i data-lucide="clock"></i> Leave Approvals</a>
+                <a href="#" class="nav-link ${currentView === 'request' ? 'active' : ''}" onclick="switchView('request')"><i data-lucide="file-text"></i> My Resignation</a>
+            </nav>
+
+            <div style="margin-top: auto;">
+                <a href="index.html" class="nav-link"><i data-lucide="arrow-left"></i> Switch Portal</a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <header class="header">
+                <div>
+                    <h1 id="page-title">Team Resignations</h1>
+                    <p id="page-subtitle" style="color: var(--text-muted);">Review and approve resignation requests.</p>
+                </div>
+                <div class="header-user">
+                    <div id="notif-bell" style="position: relative; cursor: pointer; margin-right: 1.5rem;">
+                        <i data-lucide="bell"></i>
+                        <span id="notif-dot" style="display: none; position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; border: 2px solid white;"></span>
+                    </div>
+                    <div style="text-align: right;">
+                        <p id="user-display-name" style="font-weight: 700; font-size: 0.9rem;">--</p>
+                        <p id="user-display-role" style="font-size: 0.75rem; color: var(--text-muted);">Manager</p>
+                    </div>
+                    <div id="user-avatar" class="user-avatar" style="background: var(--warning);">?</div>
+                </div>
+            </header>
+
+            <div id="notif-bar" style="display: none; background: #FEF2F2; border-bottom: 1px solid #FEE2E2; padding: 1rem 2.5rem; display: flex; align-items: center; gap: 1rem;">
+                <i data-lucide="info" style="color: var(--danger);"></i>
+                <p id="notif-text" style="font-size: 0.9rem; color: #991B1B; font-weight: 500;"></p>
+                <button onclick="this.parentElement.style.display='none'" style="margin-left: auto; background: none; border: none; cursor: pointer; color: var(--danger);"><i data-lucide="x" size="16"></i></button>
+            </div>
+
+            <div class="page-container" id="portal-body">
+                <!-- Content injected by JS -->
+            </div>
+
+            <!-- Review Modal (only for Approval view) -->
+            <div id="approval-modal" class="card" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+                <h3 class="card-title">Review Resignation</h3>
+                <p id="modal-emp-info" style="margin-bottom: 1rem; font-weight: 600;"></p>
+                <div class="form-group">
+                    <label class="label">Manager Comments</label>
+                    <textarea id="mgr-feedback" class="input" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="confirmApproval()">Approve</button>
+                    <button class="btn btn-danger" onclick="confirmRejection()">Reject</button>
+                    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+        const MGR_ID = localStorage.getItem('MY_ID') || 'MGR001';
+        const MGR_NAME = localStorage.getItem('MY_NAME') || 'Suresh Kumar';
+        const ACTIVE_COMPANY = localStorage.getItem('activeCompany') || 'Antigraviity';
+        
+        let currentView = 'approval';
+        let selectedResignation = null;
+
+        async function initPortal() {
+            renderBranding();
+            switchView(currentView);
+        }
+
+        function renderBranding() {
+            const isForge = ACTIVE_COMPANY === 'Forge India';
+            document.title = `Manager Portal | ${ACTIVE_COMPANY}`;
+            const brandName = document.getElementById('brand-name');
+            const logo = document.getElementById('brand-logo-container');
+            const avatar = document.getElementById('user-avatar');
+            
+            document.getElementById('user-display-name').textContent = MGR_NAME;
+            avatar.textContent = MGR_NAME.charAt(0);
+
+            if (isForge) {
+                logo.innerHTML = `
+                    <div style="width: 24px; height: 24px; background: #0055b8; position: relative; border-radius: 2px;">
+                        <div style="position: absolute; bottom: 0; right: 0; width: 0; height: 0; border-left: 12px solid transparent; border-bottom: 12px solid #facc15;"></div>
+                    </div>
+                `;
+                logo.style.background = 'transparent';
+                brandName.innerHTML = `FORGE <span style="color: #facc15;">INDIA</span><br><span style="font-size: 0.6rem; color: #0055b8; font-weight: 700; letter-spacing: 3px; display: block; margin-top: 2px;">CONNECT</span>`;
+                brandName.style.lineHeight = '1.1';
+                brandName.style.fontSize = '1.1rem';
+                
+                avatar.style.background = '#0055b8';
+                document.documentElement.style.setProperty('--primary', '#0055b8');
+            } else {
+                logo.innerHTML = '<i data-lucide="shield-check"></i>';
+                logo.style.background = 'black';
+                brandName.textContent = 'Antigraviity';
+                brandName.style.lineHeight = 'normal';
+                brandName.style.fontSize = '1.25rem';
+                
+                avatar.style.background = '#f59e0b';
+                document.documentElement.style.setProperty('--primary', '#6366f1');
+            }
+            lucide.createIcons();
+        }
+
+        async function switchView(view) {
+            currentView = view;
+            const container = document.getElementById('portal-body');
+            
+            if (view === 'request') {
+                renderManagerSelfResignation(container);
+            } else if (view === 'attendance') {
+                renderTeamAttendance(container);
+            } else if (view === 'leaves') {
+                renderLeaveApprovals(container);
+            } else {
+                renderTeamApprovals(container);
+            }
+            renderSidebar();
+            lucide.createIcons();
+        }
+
+        function renderSidebar() {
+            // Updating active states handles by the template literal in innerHTML above if I were to re-render, 
+            // but for now I'll just do manual class toggling for speed.
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(l => {
+                const text = l.textContent.toLowerCase();
+                l.classList.remove('active');
+                if(text.includes('resignation approval') && currentView === 'approval') l.classList.add('active');
+                if(text.includes('team attendance') && currentView === 'attendance') l.classList.add('active');
+                if(text.includes('leave approvals') && currentView === 'leaves') l.classList.add('active');
+                if(text.includes('my resignation') && currentView === 'request') l.classList.add('active');
+            });
+        }
+
+        // --- SELF RESIGNATION LOGIC (MGR AS EMP) ---
+        async function renderManagerSelfResignation(container) {
+            document.getElementById('page-title').textContent = "My Resignation";
+            document.getElementById('page-subtitle').textContent = "Track your own departure process.";
+            
+            const all = await api.getResignations();
+            const myHistory = all.filter(r => r.employeeId === MGR_ID).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+            const last = myHistory[0];
+
+            if (!last || last.status === 'Rejected') {
+                if (last && last.status === 'Rejected') {
+                    showRejectionNotification(last.managerComments);
+                }
+                showSubmissionForm(container);
+            } else {
+                showTrackingDashboard(container, last);
+            }
+        }
+
+        function showRejectionNotification(reason) {
+            document.getElementById('notif-bar').style.display = 'flex';
+            document.getElementById('notif-text').textContent = `Your resignation was rejected by HR/Dir. Reason: "${reason}"`;
+        }
+
+        function showSubmissionForm(container) {
+            const date90 = new Date();
+            date90.setDate(date90.getDate() + 90);
+            const dateStr = date90.toISOString().split('T')[0];
+
+            container.innerHTML = `
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <h3 class="card-title">Apply for Resignation</h3>
+                    <div class="form-group">
+                        <label class="label">Reason</label>
+                        <select class="input" id="reason">
+                            <option>Career Growth</option>
+                            <option>Personal Reasons</option>
+                            <option>Health</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Personal Email Address (For Relieving Letter)</label>
+                        <input type="email" class="input" id="personalEmail" placeholder="yourname@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Last Working Day (Fixed 90 Days Notice)</label>
+                        <input type="date" class="input" id="lwd" value="${dateStr}" readonly style="background: var(--bg-main); cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="label">Comments</label>
+                        <textarea class="input" id="comments" rows="3"></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="submitSelfForm()">Submit Request</button>
+                </div>
+            `;
+        }
+
+        async function submitSelfForm() {
+            const personalEmail = document.getElementById('personalEmail').value;
+            if (!personalEmail) { alert('Specify personal email.'); return; }
+
+            const data = {
+                employeeId: MGR_ID,
+                employeeName: MGR_NAME,
+                personalEmail: personalEmail,
+                reason: document.getElementById('reason').value,
+                lwd: document.getElementById('lwd').value,
+                comments: document.getElementById('comments').value
+            };
+            await api.submitResignation(data);
+            alert('Your resignation request has been sent to HR.');
+            switchView('request');
+        }
+
+        function showTrackingDashboard(container, data) {
+            const steps = [
+                { id: 1, name: 'Sub' }, { id: 2, name: 'Mgr' }, { id: 3, name: 'HR' }, { id: 4, name: 'Notice' },
+                { id: 5, name: 'Clr' }, { id: 6, name: 'Exit' }, { id: 7, name: 'Set' }, { id: 8, name: 'End' }
+            ];
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">My Progress</h3>
+                        <span class="badge badge-blue">${data.status}</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+                        ${steps.map(s => `<div style="flex: 1; height: 8px; background: ${s.id <= data.step ? 'var(--success)' : (s.id === data.step+1 ? 'var(--primary)' : 'var(--border)')}; border-radius: 4px;"></div>`).join('')}
+                    </div>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <p style="color: var(--text-muted);">Current Status</p>
+                    <h2 style="margin: 0.5rem 0;">${data.status}</h2>
+                    <p>LWD: ${data.lwd}</p>
+                </div>
+            `;
+        }
+
+        // --- TEAM APPROVALS LOGIC ---
+        async function renderTeamApprovals(container) {
+            document.getElementById('page-title').textContent = "Resignation Approval";
+            document.getElementById('page-subtitle').textContent = "Review and approve resignation requests from your team.";
+            
+            const list = await api.getResignations({ managerId: MGR_ID });
+            const pending = list.filter(r => r.status === 'Submitted' && r.employeeId !== MGR_ID);
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending Team Requests</h3>
+                        <span class="badge ${pending.length > 0 ? 'badge-blue' : ''}">${pending.length} New</span>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Employee</th><th>Date</th><th>LWD</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="table-body">
+                                ${pending.length === 0 ? `<tr><td colspan="5" style="text-align: center; padding: 2rem;">No pending requests.</td></tr>` : 
+                                  pending.map(r => `
+                                    <tr>
+                                        <td><b>${r.employeeName}</b><br><small>${r.employeeId}</small></td>
+                                        <td>${new Date(r.createdAt).toLocaleDateString()}</td>
+                                        <td>${r.lwd}</td>
+                                        <td><span class="badge badge-pending">${r.status}</span></td>
+                                        <td><button class="btn btn-primary" onclick='openModal(${JSON.stringify(r)})'>Review</button></td>
+                                    </tr>
+                                  `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openModal(resignation) {
+            selectedResignation = resignation;
+            document.getElementById('modal-emp-info').textContent = `Employee: ${resignation.employeeName} (${resignation.employeeId})`;
+            document.getElementById('mgr-feedback').value = '';
+            document.getElementById('approval-modal').style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('approval-modal').style.display = 'none'; }
+
+        // --- HRMS: TEAM ATTENDANCE ---
+        async function renderTeamAttendance(container) {
+            document.getElementById('page-title').textContent = "Team Attendance";
+            document.getElementById('page-subtitle').textContent = "Monitor today's presence and shift timings of your team.";
+            
+            const logs = await api.getAttendance({ managerId: MGR_ID });
+
+            container.innerHTML = `
+                <div class="card">
+                    <h3 class="card-title">Today's Presence</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Employee</th><th>Clock In</th><th>Clock Out</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                ${logs.length === 0 ? '<tr><td colspan="4" style="text-align: center; padding: 2rem;">No attendance records for today.</td></tr>' : 
+                                    logs.map(log => `
+                                        <tr>
+                                            <td><b>${log.employeeName}</b><br><small>${log.employeeId}</small></td>
+                                            <td>${new Date(log.clockIn).toLocaleTimeString()}</td>
+                                            <td>${log.clockOut ? new Date(log.clockOut).toLocaleTimeString() : '<span style="color: #6366f1;">Active</span>'}</td>
+                                            <td><span class="badge badge-success">${log.status}</span></td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- HRMS: LEAVE APPROVALS ---
+        async function renderLeaveApprovals(container) {
+            document.getElementById('page-title').textContent = "Leave Approvals";
+            document.getElementById('page-subtitle').textContent = "Approve or reject leave applications from your team.";
+            
+            const allLeaves = await api.getLeaves({ managerId: MGR_ID });
+            const pending = allLeaves.filter(l => l.status === 'Pending');
+
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Pending Applications</h3>
+                        <span class="badge ${pending.length > 0 ? 'badge-blue' : ''}">${pending.length} New</span>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Employee</th><th>Type</th><th>Dates</th><th>Reason</th><th>Action</th></tr>
+                            </thead>
+                            <tbody>
+                                ${pending.length === 0 ? '<tr><td colspan="5" style="text-align: center; padding: 2rem;">No pending leave requests.</td></tr>' : 
+                                    pending.map(l => `
+                                        <tr>
+                                            <td><b>${l.employeeName}</b><br><small>${l.employeeId}</small></td>
+                                            <td>${l.type}</td>
+                                            <td>${new Date(l.startDate).toLocaleDateString()} - ${new Date(l.endDate).toLocaleDateString()}</td>
+                                            <td style="max-width: 200px; font-size: 0.8rem;">${l.reason}</td>
+                                            <td style="display: flex; gap: 0.5rem;">
+                                                <button class="btn btn-primary" onclick="handleLeaveDecision('${l.id}', 'Approved')">Approve</button>
+                                                <button class="btn btn-danger" onclick="handleLeaveDecision('${l.id}', 'Rejected')">Reject</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function handleLeaveDecision(id, status) {
+            await api.updateLeave(id, { status });
+            alert(`Leave ${status}!`);
+            switchView('leaves');
+        }
+
+        async function confirmApproval() {
+            await api.updateResignation(selectedResignation.id, { status: 'Manager Approved', step: 2, managerComments: document.getElementById('mgr-feedback').value });
+            alert('Approved!'); closeModal(); switchView('approval');
+        }
+
+        async function confirmRejection() {
+            if (!document.getElementById('mgr-feedback').value) { alert('Specify reason.'); return; }
+            await api.updateResignation(selectedResignation.id, { status: 'Rejected', step: 0, managerComments: document.getElementById('mgr-feedback').value });
+            alert('Rejected.'); closeModal(); switchView('approval');
+        }
+
+        initPortal();
+    </script>
+</body>
+</html>
