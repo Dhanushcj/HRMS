@@ -259,6 +259,11 @@ app.post('/api/login', (req, res) => {
 
     if (!user) return res.status(404).json({ error: 'User not found' });
     
+    // Check if account is deactivated (Relieved)
+    if (user.status === 'Relieved') {
+        return res.status(403).json({ error: 'Access Denied: Your account has been deactivated as you have been relieved from your duties.' });
+    }
+
     // Check individual password
     if (user.password !== password) return res.status(401).json({ error: 'Invalid password' });
 
@@ -462,12 +467,19 @@ app.patch('/api/resignations/:id', async (req, res) => {
 
     // Trigger Relieving Letter if HR just clicked Relieved
     if (req.body.status === 'Relieved') {
+        const empIndex = data.employees.findIndex(e => e.id === updatedResignation.employeeId);
+        if (empIndex !== -1) {
+            data.employees[empIndex].status = 'Relieved';
+            console.log(`🔒 ACCESS REVOKED for ${data.employees[empIndex].name} (${data.employees[empIndex].id})`);
+        }
+
         const tempPath = path.join(__dirname, `Relieving_Letter_${updatedResignation.employeeId}.pdf`);
         generateRelievingPDF(updatedResignation, tempPath)
             .then(() => sendRelievingLetter(updatedResignation, tempPath))
             .catch(err => console.error("PDF Workflow Error:", err));
     }
     
+    writeData(data);
     res.json(updatedResignation);
 });
 

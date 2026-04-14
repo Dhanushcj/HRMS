@@ -101,15 +101,77 @@
       ]
     }
   ],
-  "resignations": [],
+  "resignations": [
+    {
+      "id": "1776163410063",
+      "employeeName": "Dhanush C.",
+      "employeeId": "EMP010",
+      "personalEmail": "dhanushchakravarthy18@gmail.com",
+      "reason": "Better Opportunity",
+      "lwd": "2026-05-14",
+      "status": "Relieved",
+      "step": 8,
+      "clearance": {
+        "it": true,
+        "admin": true,
+        "finance": true
+      },
+      "managerComments": "ok",
+      "hrComments": "",
+      "createdAt": "2026-04-14T10:43:30.082Z",
+      "relievedDate": "2026-04-14T10:44:21.264Z"
+    }
+  ],
   "transfers": [],
   "attendance": [
-    { "id": "ATT001", "employeeId": "EMP010", "date": "2026-04-01", "clockIn": "2026-04-01T09:00:00.000Z", "clockOut": "2026-04-01T18:00:00.000Z", "status": "Present" },
-    { "id": "ATT002", "employeeId": "EMP010", "date": "2026-04-02", "clockIn": "2026-04-02T09:15:00.000Z", "clockOut": "2026-04-02T18:30:00.000Z", "status": "Present" },
-    { "id": "ATT003", "employeeId": "EMP010", "date": "2026-04-03", "clockIn": "2026-04-03T10:15:00.000Z", "clockOut": "2026-04-03T19:00:00.000Z", "status": "Late Login" },
-    { "id": "ATT004", "employeeId": "EMP010", "date": "2026-04-06", "clockIn": "2026-04-06T08:50:00.000Z", "clockOut": "2026-04-06T17:50:00.000Z", "status": "Present" },
-    { "id": "ATT005", "employeeId": "EMP010", "date": "2026-04-07", "clockIn": "2026-04-07T09:05:00.000Z", "clockOut": "2026-04-07T18:05:00.000Z", "status": "Present" },
-    { "id": "ATT006", "employeeId": "EMP010", "date": "2026-04-14", "clockIn": "2026-04-14T07:00:53.332Z", "clockOut": "2026-04-14T07:01:13.543Z", "status": "Present" }
+    {
+      "id": "ATT001",
+      "employeeId": "EMP010",
+      "date": "2026-04-01",
+      "clockIn": "2026-04-01T09:00:00.000Z",
+      "clockOut": "2026-04-01T18:00:00.000Z",
+      "status": "Present"
+    },
+    {
+      "id": "ATT002",
+      "employeeId": "EMP010",
+      "date": "2026-04-02",
+      "clockIn": "2026-04-02T09:15:00.000Z",
+      "clockOut": "2026-04-02T18:30:00.000Z",
+      "status": "Present"
+    },
+    {
+      "id": "ATT003",
+      "employeeId": "EMP010",
+      "date": "2026-04-03",
+      "clockIn": "2026-04-03T10:15:00.000Z",
+      "clockOut": "2026-04-03T19:00:00.000Z",
+      "status": "Late Login"
+    },
+    {
+      "id": "ATT004",
+      "employeeId": "EMP010",
+      "date": "2026-04-06",
+      "clockIn": "2026-04-06T08:50:00.000Z",
+      "clockOut": "2026-04-06T17:50:00.000Z",
+      "status": "Present"
+    },
+    {
+      "id": "ATT005",
+      "employeeId": "EMP010",
+      "date": "2026-04-07",
+      "clockIn": "2026-04-07T09:05:00.000Z",
+      "clockOut": "2026-04-07T18:05:00.000Z",
+      "status": "Present"
+    },
+    {
+      "id": "ATT006",
+      "employeeId": "EMP010",
+      "date": "2026-04-14",
+      "clockIn": "2026-04-14T07:00:53.332Z",
+      "clockOut": "2026-04-14T07:01:13.543Z",
+      "status": "Present"
+    }
   ],
   "leaves": [
     {
