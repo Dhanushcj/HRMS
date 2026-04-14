@@ -618,6 +618,11 @@ app.use('/api', (req, res) => {
     res.status(404).json({ error: `API route ${req.method} ${req.originalUrl} not found` });
 });
 
-app.listen(PORT, () => {
-    console.log(`Resignation Portal Backend running at http://localhost:${PORT}`);
-});
+// Only listen if not running as a Vercel serverless function
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Resignation Portal Backend running at http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
