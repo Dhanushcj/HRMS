@@ -162,6 +162,7 @@
                 <div class="sidebar-group">
                     <p class="sidebar-group-label">Support</p>
                     <nav class="nav-menu">
+                        <a href="#" class="nav-link ${currentSubView === 'policies' ? 'active' : ''}" onclick="switchSubView('policies')"><i data-lucide="book-open"></i> Policy Center</a>
                         <a href="#" class="nav-link ${currentSubView === 'help' ? 'active' : ''}" onclick="switchSubView('help')"><i data-lucide="help-circle"></i> Help & Support</a>
                     </nav>
                 </div>
@@ -198,7 +199,8 @@
                 else if (currentSubView === 'leaves') await renderLeaveView(container);
                 else if (currentSubView === 'transfers') await renderTransferView(container);
                 else if (currentSubView === 'resignation' && activeCompany !== 'Forge India') await renderAntigraviityResignation(container);
-                else if (currentSubView === 'documents') renderDocumentsView(container);
+                else if (currentSubView === 'documents') await renderDocumentVault(container);
+                else if (currentSubView === 'policies') renderPolicyCenter(container);
                 else if (currentSubView === 'profile') renderProfileView(container);
                 else if (currentSubView === 'activity') renderActivityView(container);
                 else if (currentSubView === 'help') renderHelpView(container);
@@ -216,6 +218,54 @@
                 `;
                 lucide.createIcons();
             }
+        }
+
+        function renderPolicyCenter(container) {
+            document.getElementById('page-title').textContent = "Policy Center";
+            document.getElementById('page-subtitle').textContent = "Access and download official company guidelines and IT standards.";
+
+            container.innerHTML = `
+                <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+                    <!-- Company Policy Card -->
+                    <div class="card" style="display: flex; flex-direction: column; gap: 1.5rem; transition: transform 0.2s; cursor: default;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="background: rgba(99, 102, 241, 0.1); color: #6366f1; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="building-2"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700;">Company Policy</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Standard of conduct, leaves, and work culture.</p>
+                            </div>
+                        </div>
+                        <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; font-size: 0.85rem; line-height: 1.6; color: #475569;">
+                            This document outlines the official code of conduct, performance standards, and the comprehensive leave policy for all permanent employees.
+                        </div>
+                        <button class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: #6366f1;" onclick="api.downloadPolicy('company', '${activeCompany}')">
+                            <i data-lucide="download" style="width: 18px;"></i> Download PDF
+                        </button>
+                    </div>
+
+                    <!-- IT Policy Card -->
+                    <div class="card" style="display: flex; flex-direction: column; gap: 1.5rem; transition: transform 0.2s; cursor: default;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="background: rgba(14, 165, 233, 0.1); color: #0ea5e9; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="shield-check"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700;">IT Security Policy</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Hardware care, data protection, and network safety.</p>
+                            </div>
+                        </div>
+                        <div style="background: #f8fafc; padding: 1rem; border-radius: 12px; font-size: 0.85rem; line-height: 1.6; color: #475569;">
+                            Essential guidelines regarding hardware maintenance, password security protocols, and strict data confidentiality requirements.
+                        </div>
+                        <button class="btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: #0ea5e9;" onclick="api.downloadPolicy('it', '${activeCompany}')">
+                            <i data-lucide="download" style="width: 18px;"></i> Download PDF
+                        </button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
         async function renderHomeDashboard(container) {
@@ -304,13 +354,13 @@
                         <div class="card">
                             <h3 class="card-title" style="margin-bottom: 1.5rem;">Policies & Help</h3>
                             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <div style="padding: 12px; background: #F8FAFC; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div style="padding: 12px; background: #F8FAFC; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="switchSubView('policies')">
                                     <div style="width: 28px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
                                         <i data-lucide="book-open" style="width: 14px;"></i>
                                     </div>
                                     <span style="font-size: 0.8rem; font-weight: 600;">Employee Handbook</span>
                                 </div>
-                                <div style="padding: 12px; background: #F8FAFC; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                                <div style="padding: 12px; background: #F8FAFC; border-radius: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="switchSubView('policies')">
                                     <div style="width: 28px; height: 28px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--warning);">
                                         <i data-lucide="shield" style="width: 14px;"></i>
                                     </div>

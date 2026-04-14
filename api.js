@@ -161,5 +161,11 @@ const api = {
     async getDocuments(employeeId) {
         const res = await fetch(`${API_BASE}/documents/${employeeId}`);
         return res.json();
+    },
+
+    // --- POLICIES: Compliance ---
+    downloadPolicy(type, company) {
+        const url = `${API_BASE}/policies/${type}?company=${encodeURIComponent(company)}`;
+        window.location.href = url;
     }
 };

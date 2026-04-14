@@ -212,6 +212,64 @@ function generateRelievingPDF(resignation, filePath) {
 }
 
 /**
+ * Generates official Company or IT Policy PDFs
+ */
+function generatePolicyPDF(type, company, filePath) {
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument({ margin: 50 });
+        const stream = fs.createWriteStream(filePath);
+        doc.pipe(stream);
+
+        const primaryColor = company === 'Antigraviity' ? '#6366f1' : '#0055b8';
+        const brandName = company === 'Antigraviity' ? 'ANTIGRAVIITY' : 'FORGE INDIA CONNECT';
+
+        // Header
+        doc.fillColor(primaryColor).fontSize(20).text(brandName, { align: 'center', weight: 'bold' });
+        doc.fontSize(10).fillColor('#64748b').text('Official Employee Handbook & Compliance', { align: 'center' });
+        doc.moveDown(2);
+
+        if (type === 'company') {
+            doc.fillColor('black').fontSize(16).text('General Company Policy', { underline: true });
+            doc.moveDown(1);
+            doc.fontSize(10);
+            const content = [
+                { title: '1. Work Culture & Hours', body: 'Standard working hours are from 09:00 AM to 06:00 PM, Monday through Friday. Employees are expected to maintain professionalism and adhere to the time-tracking protocols.' },
+                { title: '2. Leave Entitlements', body: 'Each permanent employee is entitled to 15 days of paid annual leave per calendar year. Sick leave and emergency leave require timely notification to the reporting manager.' },
+                { title: '3. Code of Conduct', body: 'We maintain a zero-tolerance policy towards any form of harassment, discrimination, or unethical behavior. Respect and inclusivity are core pillars of our workplace.' },
+                { title: '4. Performance Reviews', body: 'Quarterly reviews are conducted to align individual goals with organizational objectives and provide constructive feedback for career growth.' }
+            ];
+            content.forEach(c => {
+                doc.fillColor(primaryColor).fontSize(12).text(c.title);
+                doc.fillColor('black').fontSize(10).text(c.body);
+                doc.moveDown(1);
+            });
+        } else {
+            doc.fillColor('black').fontSize(16).text('IT Security & Hardware Policy', { underline: true });
+            doc.moveDown(1);
+            doc.fontSize(10);
+            const content = [
+                { title: '1. Hardware Responsibility', body: 'Employees are responsible for the physical security and maintenance of all issued hardware (laptops, peripherals, and accessories).' },
+                { title: '2. Data Confidentiality', body: 'All internal source code, client data, and proprietary information must be handled with strict confidentiality. Unauthorized data sharing is a serious violation.' },
+                { title: '3. Software Installation', body: 'Only approved software from the organization IT repository may be installed. Pirated or unlicensed software is strictly prohibited on company assets.' },
+                { title: '4. Internet & Network Usage', body: 'Company networks must be used primarily for work-related activities. Accessing malicious sites or using unauthorized VPNs is prohibited.' }
+            ];
+            content.forEach(c => {
+                doc.fillColor(primaryColor).fontSize(12).text(c.title);
+                doc.fillColor('black').fontSize(10).text(c.body);
+                doc.moveDown(1);
+            });
+        }
+
+        doc.moveDown(4);
+        doc.fontSize(10).fillColor('#64748b').text(`This is a system-generated document for ${company} employees. Last updated: ${new Date().getFullYear()}.`, { align: 'center' });
+        
+        doc.end();
+        stream.on('finish', () => resolve(filePath));
+        stream.on('error', (err) => reject(err));
+    });
+}
+
+/**
  * Sends the relieving letter to the employee's personal email
  */
 async function sendRelievingLetter(resignation, pdfPath) {
@@ -692,7 +750,35 @@ app.get('/api/duty-permissions', (req, res) => {
     const data = readData();
     res.json(data.dutyPermissions || []);
 });
-app.use('/api', (req, res) => {
+
+// --- HRMS: Policies & Handbooks ---
+app.get('/api/policies/:type', async (req, res) => {
+    const { type } = req.params;
+    const { company } = req.query;
+    
+    if (type !== 'company' && type !== 'it') {
+        return res.status(400).json({ error: 'Invalid policy type' });
+    }
+
+    const brand = company || 'Antigraviity';
+    const fileName = `${type}_policy_${brand.replace(/\s+/g, '_')}.pdf`;
+    const tempPath = path.join(__dirname, fileName);
+
+    try {
+        await generatePolicyPDF(type, brand, tempPath);
+        res.download(tempPath, fileName, (err) => {
+            if (err) console.error("Policy download error:", err);
+            // Optional: delete temp file after download
+            if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+        });
+    } catch (err) {
+        console.error("PDF Workflow Error:", err);
+        res.status(500).json({ error: 'Failed to generate policy document' });
+    }
+});
+
+// Final catch-all for routing
+app.use((req, res) => {
     res.status(404).json({ error: `API route ${req.method} ${req.originalUrl} not found` });
 });
 
