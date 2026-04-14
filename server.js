@@ -108,6 +108,53 @@ async function sendHRNotification(resignation) {
 }
 
 /**
+ * Sends a generic status update to the employee at various resignation stages
+ */
+async function sendEmployeeUpdate(resignation, stageName, message) {
+    if (!resignation.personalEmail) return;
+
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: GMAIL_USER,
+            pass: GMAIL_PASS
+        }
+    });
+
+    const mailOptions = {
+        from: GMAIL_USER,
+        to: resignation.personalEmail,
+        subject: `Update on Your Resignation: ${stageName} - ${resignation.employeeName}`,
+        html: `
+            <div style="font-family: sans-serif; max-width: 600px; line-height: 1.6; color: #334155;">
+                <div style="background: #6366f1; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+                    <h1 style="color: white; margin: 0; font-size: 20px;">Resignation Journey Update</h1>
+                </div>
+                <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 8px 8px;">
+                    <p>Dear <strong>${resignation.employeeName}</strong>,</p>
+                    <p>${message}</p>
+                    <div style="margin: 20px 0; padding: 15px; background: #f8fafc; border-left: 4px solid #6366f1;">
+                        <p style="margin: 5px 0;"><strong>Status:</strong> ${stageName}</p>
+                        <p style="margin: 5px 0;"><strong>Employee ID:</strong> ${resignation.employeeId}</p>
+                        <p style="margin: 5px 0;"><strong>Provisionary LWD:</strong> ${resignation.lwd}</p>
+                    </div>
+                    <p>You can track your real-time progress through the <strong><a href="http://localhost:3000/index.html">Employee Portal</a></strong> tracker.</p>
+                    <br>
+                    <p>Best Regards,<br><strong>Antigraviity HR Operations</strong></p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`📩 Employee Update Sent: [${stageName}] for ${resignation.employeeId}`);
+    } catch (error) {
+        console.error(`❌ Employee Email Error (${stageName}):`, error);
+    }
+}
+
+/**
  * Generates a professional relieving letter as a PDF
  */
 function generateRelievingPDF(resignation, filePath) {
@@ -437,10 +484,14 @@ app.post('/api/resignations', async (req, res) => {
     data.resignations.push(newResignation);
     writeData(data);
     
-    // Trigger Automated Email (Non-blocking)
-    sendManagerNotification(newResignation).catch(err => {
-        console.error("Delayed Email Error:", err);
-    });
+    // Trigger Automated Emails (Non-blocking)
+    sendManagerNotification(newResignation).catch(err => console.error("Manager Email Error:", err));
+    
+    sendEmployeeUpdate(
+        newResignation, 
+        'Resignation Submitted', 
+        'Your resignation request has been successfully submitted to the HRMS portal. Your reporting manager has been notified for initial review.'
+    ).catch(err => console.error("Employee Submission Email Error:", err));
     
     res.status(201).json(newResignation);
 });
@@ -463,6 +514,21 @@ app.patch('/api/resignations/:id', async (req, res) => {
     if (req.body.status === 'Manager Approved') {
         console.log(`🔔 Triggering HR Notification for ${updatedResignation.employeeName}`);
         sendHRNotification(updatedResignation).catch(console.error);
+        
+        sendEmployeeUpdate(
+            updatedResignation, 
+            'Manager Approved', 
+            `Your resignation has been approved by your reporting manager (${updatedResignation.managerComments || 'No comments'}). Your request has been forwarded to the HR department for final validation and clearance.`
+        ).catch(console.error);
+    }
+
+    // Trigger Employee Notification if HR just validated
+    if (req.body.status === 'HR Validated') {
+        sendEmployeeUpdate(
+            updatedResignation,
+            'HR Validated - Clearance Started',
+            'HR has officially validated your resignation. The departmental clearance process (IT, Admin, and Finance) has now been initiated. Please ensure all assets are returned before your Last Working Day.'
+        ).catch(console.error);
     }
 
     // Trigger Relieving Letter if HR just clicked Relieved
