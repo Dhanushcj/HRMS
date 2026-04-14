@@ -10,7 +10,6 @@
       "role": "Full Stack Developer",
       "managerId": "MGR001",
       "company": "Antigraviity",
-      "status": "Relieved",
       "allowedPortals": [
         "Antigraviity"
       ]
@@ -102,27 +101,7 @@
       ]
     }
   ],
-  "resignations": [
-    {
-      "id": "1776163799676",
-      "employeeName": "Dhanush C.",
-      "employeeId": "EMP010",
-      "personalEmail": "dhanushchakravarthy18@gmail.com",
-      "reason": "Better Opportunity",
-      "lwd": "2026-05-14",
-      "status": "Relieved",
-      "step": 8,
-      "clearance": {
-        "it": true,
-        "admin": true,
-        "finance": true
-      },
-      "managerComments": "ok",
-      "hrComments": "",
-      "createdAt": "2026-04-14T10:49:59.688Z",
-      "relievedDate": "2026-04-14T10:50:41.282Z"
-    }
-  ],
+  "resignations": [],
   "transfers": [],
   "attendance": [],
   "leaves": [],
